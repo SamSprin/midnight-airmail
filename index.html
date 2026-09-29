@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Midnight Airmail</title>
+  <meta name="description" content="A paper-collage poker roguelike: send letters by paper airplane before daybreak.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Mali:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/ui.css">
+</head>
+<body>
+  <div id="app">
+    <div id="scene" aria-hidden="true"></div>
+
+    <div id="game" class="layout">
+      <aside id="sidebar">
+        <div id="blind-panel"></div>
+        <div id="score-panel"></div>
+        <div id="hand-panel"></div>
+        <div id="counters-panel"></div>
+        <div id="sidebar-buttons"></div>
+      </aside>
+
+      <main id="table">
+        <div id="top-row">
+          <div id="keepsakes" class="slots"></div>
+          <div id="consumables" class="slots"></div>
+        </div>
+        <div id="stage"></div>
+        <div id="hand-area">
+          <div id="hand"></div>
+          <div id="hand-controls"></div>
+        </div>
+        <div id="deck-pile"></div>
+      </main>
+    </div>
+
+    <div id="overlay"></div>
+    <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+    <svg id="svg-defs" width="0" height="0" style="position:absolute" aria-hidden="true"></svg>
+  </div>
+
+  <!-- core -->
+  <script src="js/core/namespace.js"></script>
+  <script src="js/core/cards.js"></script>
+  <script src="js/core/hands.js"></script>
+  <script src="js/core/scoring.js"></script>
+  <script src="js/core/run.js"></script>
+  <!-- content -->
+  <script src="js/content/bosses.js"></script>
+  <script src="js/content/constellations.js"></script>
+  <script src="js/content/keepsakes.js"></script>
+  <script src="js/content/letters.js"></script>
+  <!-- art -->
+  <script src="js/art/art.js"></script>
+  <script src="js/art/scene.js"></script>
+  <!-- UI SCRIPTS (owned by the UI builder: add js/ui/*.js and js/audio.js here) -->
+  <script src="js/audio.js" charset="utf-8"></script>
+  <script src="js/ui/ui-core.js" charset="utf-8"></script>
+  <script src="js/ui/ui-sidebar.js" charset="utf-8"></script>
+  <script src="js/ui/ui-hand.js" charset="utf-8"></script>
+  <script src="js/ui/ui-stage.js" charset="utf-8"></script>
+  <script src="js/ui/ui-anim.js" charset="utf-8"></script>
+  <script src="js/ui/ui-modals.js" charset="utf-8"></script>
+  <!-- /UI SCRIPTS -->
+  <script src="js/main.js"></script>
+</body>
+</html>

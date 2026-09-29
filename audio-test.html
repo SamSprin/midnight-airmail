@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Midnight Airmail - audio test</title>
+<style>
+  body { background:#1B1E5B; color:#F3EAD3; font:15px/1.4 "Mali", "Comic Sans MS", cursive; margin:0; padding:16px; }
+  h1 { font-size:22px; margin:0 0 8px; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; align-items:center; }
+  button { background:#F3EAD3; color:#2A2250; border:0; border-radius:8px; padding:8px 12px; font:inherit; cursor:pointer; }
+  button.on { background:#F6C445; }
+  label { display:flex; gap:6px; align-items:center; }
+  pre { background:#0d0f33; padding:10px; border-radius:8px; overflow:auto; max-height:260px; font-size:12px; }
+  #status { color:#F6C445; }
+</style>
+</head>
+<body>
+<h1>Midnight Airmail - MA.audio test</h1>
+<div class="row">
+  <button id="unlock">unlock()</button>
+  <button id="music">music: off</button>
+  <button id="mute">mute: off</button>
+  <label>sfx <input id="vol" type="range" min="0" max="1" step="0.05" value="0.7"></label>
+  <label>music <input id="mvol" type="range" min="0" max="1" step="0.05" value="0.35"></label>
+  <label>pitch <input id="pitch" type="range" min="-12" max="24" step="1" value="0"><span id="pv">0</span></label>
+</div>
+<div class="row" id="sounds"></div>
+<div class="row">
+  <button id="all">play all in sequence</button>
+  <button id="spam">spam test (80 x select)</button>
+  <button id="climb">ink climb (12)</button>
+  <button id="offline">offline render report</button>
+</div>
+<p id="status">-</p>
+<pre id="log"></pre>
+<script src="js/core/namespace.js"></script>
+<script src="js/audio.js"></script>
+<script>
+(function () {
+  var A = MA.audio, $ = function (id) { return document.getElementById(id); };
+  var logEl = $('log');
+  function log(s) { logEl.textContent += s + '\n'; logEl.scrollTop = logEl.scrollHeight; }
+  window.addEventListener('error', function (e) { log('WINDOW ERROR: ' + e.message); });
+  window.addEventListener('unhandledrejection', function (e) { log('UNHANDLED REJECTION: ' + e.reason); });
+
+  var pitch = function () { return +$('pitch').value; };
+  A.list().forEach(function (name) {
+    var b = document.createElement('button');
+    b.textContent = name; b.setAttribute('data-sound', name);
+    b.onclick = function () { A.unlock(); log(name + ' -> ' + A.play(name, { pitch: pitch() })); };
+    $('sounds').appendChild(b);
+  });
+
+  $('unlock').onclick = function () { log('unlock -> ' + A.unlock()); };
+  $('music').onclick = function () {
+    A.unlock(); A.music(!A.isMusicOn());
+    this.textContent = 'music: ' + (A.isMusicOn() ? 'on' : 'off'); this.className = A.isMusicOn() ? 'on' : '';
+  };
+  $('mute').onclick = function () {
+    A.setMuted(!A.isMuted());
+    this.textContent = 'mute: ' + (A.isMuted() ? 'on' : 'off'); this.className = A.isMuted() ? 'on' : '';
+  };
+  $('vol').oninput = function () { A.setVolume(+this.value); };
+  $('mvol').oninput = function () { A.setMusicVolume(+this.value); };
+  $('pitch').oninput = function () { $('pv').textContent = this.value; };
+
+  $('all').onclick = function () {
+    A.unlock();
+    var names = A.list(), i = 0;
+    (function next() { if (i >= names.length) return; A.play(names[i++], { pitch: pitch() }); setTimeout(next, 900); })();
+  };
+  $('spam').onclick = function () {
+    A.unlock();
+    var ok = 0, i;
+    for (i = 0; i < 80; i++) if (A.play('select')) ok++;
+    log('spam: 80 requests in one tick -> ' + ok + ' accepted (limit ~25/s)');
+  };
+  $('climb').onclick = function () {
+    A.unlock();
+    var i = 0;
+    (function next() { if (i >= 12) return; A.play('ink', { pitch: i * 1.5 }); A.play('glow', { pitch: i }); i++; setTimeout(next, 110); })();
+  };
+
+  setInterval(function () {
+    var s = A._stats();
+    $('status').textContent = 'ctx: ' + s.state + '   live source nodes: ' + s.active + '   music nodes: ' + s.music +
+      '   unlocked: ' + A.isUnlocked() + '   musicOn: ' + A.isMusicOn();
+  }, 300);
+
+  /* Offline render: build each sound in an OfflineAudioContext and report peak / RMS / tail. */
+  $('offline').onclick = function () {
+    var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!OAC) { log('no OfflineAudioContext'); return; }
+    var names = A.list(), rate = 44100, out = [];
+    function analyse(buf) {
+      var peak = 0, sum = 0, n = 0, lastLoud = 0, thresh = 0.002, c, d, i;
+      for (c = 0; c < buf.numberOfChannels; c++) {
+        d = buf.getChannelData(c);
+        for (i = 0; i < d.length; i++) {
+          var a = Math.abs(d[i]);
+          if (a !== a) return { nan: true };
+          if (a > peak) peak = a;
+          sum += d[i] * d[i]; n++;
+          if (a > thresh && i > lastLoud) lastLoud = i;
+        }
+      }
+      return { peak: peak, rms: Math.sqrt(sum / n), tail: lastLoud / rate };
+    }
+    function one(i) {
+      if (i >= names.length) { music(); return; }
+      var octx = new OAC(2, rate * 3, rate), e = A._engine(octx);
+      var accepted = e.play(names[i], { pitch: 0 });
+      octx.startRendering().then(function (buf) {
+        var r = analyse(buf);
+        out.push(names[i] + (accepted ? '' : ' (REJECTED)') + ': ' + (r.nan ? 'NaN!' :
+          'peak ' + r.peak.toFixed(3) + '  rms ' + r.rms.toFixed(4) + '  audible ' + r.tail.toFixed(2) + 's' +
+          (r.peak > 0.9 ? '  <-- LOUD' : '') + (r.peak < 0.02 ? '  <-- QUIET' : '')));
+        one(i + 1);
+      }, function (err) { log('render error ' + names[i] + ': ' + err); one(i + 1); });
+    }
+    function music() {
+      var secs = 50, octx = new OAC(2, 22050 * secs, 22050), e = A._engine(octx);
+      e._music(secs);
+      var before = e.stats().active;
+      octx.startRendering().then(function (buf) {
+        var r = analyse(buf);
+        out.push('MUSIC ' + secs + 's (' + before + ' nodes scheduled): ' + (r.nan ? 'NaN!' :
+          'peak ' + r.peak.toFixed(3) + '  rms ' + r.rms.toFixed(4)) + '  live after render: ' + e.stats().active);
+        log(out.join('\n'));
+        window.__offlineDone = true;
+      }, function (err) { log('music render error: ' + err); });
+    }
+    log('rendering...'); one(0);
+  };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Midnight Airmail — art gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Mali:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* gallery-only styling (not part of the game) */
+    body { overflow-x: hidden; }
+    .pv { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; padding: 16px 16px 90px; }
+    .pv > h1 { font-size: 2.6rem; margin: 6px 0 2px; text-shadow: 2px 3px 0 rgba(6,5,30,.6); }
+    .pv > .lead { max-width: 60ch; margin-bottom: 14px; text-shadow: 1px 1px 0 rgba(6,5,30,.6); }
+    .pv section { margin: 26px 0; }
+    .pv h2 { font-size: 1.7rem; margin: 0 0 12px; display: inline-block; padding: 0 12px; }
+    .pv .grid { display: flex; flex-wrap: wrap; gap: 22px 18px; align-items: flex-start; }
+    .pv .cell { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; font-size: .78rem; max-width: calc(var(--card-w) + 30px); }
+    .pv .cell small { opacity: .8; line-height: 1.2; }
+    .pv .backdrop { padding: 18px 16px 14px; margin: 0 -4px; background: rgba(20, 22, 80, .55); border-radius: 6px; }
+    .pv .light { background: rgba(243, 234, 211, .12); }
+    .pv .pop { position: relative; left: auto; top: auto; transform: none; animation: none; display: inline-block; }
+    .pv .tooltip { position: relative; animation: none; display: inline-block; }
+    .pv .modal { animation: none; width: min(420px, 100%); max-height: none; overflow: visible; clip-path: var(--torn-a); }
+    .pv .banner { animation: none; }
+    .pv .plane-cell svg { display: block; }
+    #pv-toolbar { position: fixed; z-index: 45; left: 10px; bottom: 10px; right: 10px; max-width: 1100px; margin: 0 auto; padding: 10px 14px 8px; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: .78rem; }
+    #pv-toolbar .grp { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+    #pv-toolbar .grp > b { font-family: var(--font-display); font-size: 1rem; margin-right: 2px; }
+    #pv-toolbar .btn { font-size: .95rem; padding: .28em .7em; }
+    #pv-toolbar input[type=range] { width: 90px; accent-color: #1F9C8C; }
+    .swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+    .sw { width: 74px; height: 46px; padding: 3px; font-size: .62rem; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.5); border-radius: 3px; display: flex; align-items: flex-end; }
+    .state-card { display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 22px; }
+    .demo-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+  </style>
+</head>
+<body>
+  <div id="scene" aria-hidden="true"></div>
+
+  <div class="pv">
+    <h1>Midnight Airmail — art gallery</h1>
+    <p class="lead">Every procedurally-drawn asset from <code>MA.art</code> / <code>MA.scene</code> and every component from <code>style.css</code>. The night sky behind this page is the live scene; use the toolbar to drive it.</p>
+
+    <section id="s-suits">
+      <h2 class="label">Suit cut-outs, stamp, plane</h2>
+      <div class="grid backdrop light" id="g-suits"></div>
+    </section>
+
+    <section>
+      <h2 class="label tape-pink">One suit, every rank (Stars)</h2>
+      <div class="grid backdrop" id="g-ranks"></div>
+    </section>
+
+    <section>
+      <h2 class="label">A / J / Q / K, all four suits</h2>
+      <div class="grid backdrop" id="g-faces"></div>
+    </section>
+
+    <section>
+      <h2 class="label tape-gold">Stickers</h2>
+      <div class="grid backdrop" id="g-stickers"></div>
+    </section>
+
+    <section>
+      <h2 class="label tape-pink">Card states and the card back</h2>
+      <div class="grid backdrop" id="g-states"></div>
+    </section>
+
+    <section>
+      <h2 class="label">Keepsakes (32)</h2>
+      <div class="grid backdrop" id="g-keeps"></div>
+    </section>
+
+    <section>
+      <h2 class="label tape-pink">Letters (17)</h2>
+      <div class="grid backdrop" id="g-letters"></div>
+    </section>
+
+    <section>
+      <h2 class="label tape-gold">Constellations (12)</h2>
+      <div class="grid backdrop" id="g-cons"></div>
+    </section>
+
+    <section>
+      <h2 class="label">Visitors (11)</h2>
+      <div class="grid backdrop" id="g-boss"></div>
+    </section>
+
+    <section>
+      <h2 class="label tape-pink">Packs</h2>
+      <div class="grid backdrop" id="g-packs"></div>
+    </section>
+
+    <section>
+      <h2 class="label tape-gold">Buttons</h2>
+      <div class="demo-row backdrop">
+        <button class="btn btn-send"><span class="btn-icon" data-plane></span>Send</button>
+        <button class="btn btn-crumple">Crumple</button>
+        <button class="btn btn-plain">Rank</button>
+        <button class="btn btn-gold">Buy</button>
+        <button class="btn btn-send" disabled><span class="btn-icon" data-plane></span>Send</button>
+        <button class="btn btn-crumple" disabled>Crumple</button>
+        <button class="btn btn-plain btn-small">Small plain</button>
+        <button class="btn btn-gold pulse">Pulse</button>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="label">Ink × Glow, counters, price tags, labels, tape</h2>
+      <div class="demo-row backdrop">
+        <div class="ink-box"><span class="box-label">Ink</span><span class="box-num">125</span></div>
+        <span class="box-x">×</span>
+        <div class="glow-box"><span class="box-label">Glow</span><span class="box-num">7.5</span></div>
+        <div class="counter counter-sends"><span class="counter-label">Sends</span><span class="counter-value">3</span></div>
+        <div class="counter counter-crumples"><span class="counter-label">Crumples</span><span class="counter-value">2</span></div>
+        <div class="counter counter-stamps"><span class="counter-label">Stamps</span><span class="counter-value" data-stamp>12</span></div>
+        <div class="counter counter-night"><span class="counter-label">Night</span><span class="counter-value">3/8</span></div>
+        <span class="price-tag"><span data-stampi></span>5</span>
+        <span class="price-tag sell">Sell 3</span>
+        <span class="label">common</span><span class="label tape-pink">uncommon</span><span class="label tape-gold">rare</span>
+        <div class="paper" style="width:200px;padding-top:20px"><span class="tape tape-teal"></span><span class="tape tape-pink tape-l"></span>A paper panel with tape on it.</div>
+        <div class="paper-dark paper" style="width:200px;padding-top:20px"><span class="tape tape-gold"></span>A navy paper panel. <span class="t-ink">+30 Ink</span> <span class="t-glow">+4 Glow</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="label tape-pink">Score pops, markup spans, tooltip, banner, modal</h2>
+      <div class="demo-row backdrop">
+        <span class="pop pop-ink">+30</span>
+        <span class="pop pop-glow">+4</span>
+        <span class="pop pop-xglow">×1.5</span>
+        <span class="pop pop-stamp">+$3</span>
+        <span class="pop pop-say">Nine lives!</span>
+        <button class="btn btn-plain btn-small" id="btn-pop">Float a pop</button>
+      </div>
+      <div class="demo-row backdrop light" style="margin-top:14px">
+        <div class="tooltip" role="tooltip"><span class="tape"></span>
+          <div class="tip-title">Graph-Paper Moon</div><div class="tip-sub">Keepsake · common</div>
+          <div class="tip-line">Scored <span class="t-moon">☾ Moons</span> give <span class="t-glow">+3 Glow</span>.</div>
+          <div class="tip-line"><span class="t-ink">+30 Ink</span> · <span class="t-xglow">×1.5 Glow</span> · <span class="t-stamp">+3 Stamps</span></div>
+          <div class="tip-line"><span class="t-star">★ Stars</span> <span class="t-bloom">✿ Blooms</span> <span class="t-leaf">❦ Leaves</span> <span class="t-hand">Pen Pals</span></div>
+          <div class="tip-status">(Currently <span class="t-glow">+6 Glow</span>)</div>
+        </div>
+        <div class="tooltip tooltip-dark"><span class="tape tape-pink"></span><div class="tip-title">Dark tooltip</div><div class="tip-line"><span class="t-ink">+30 Ink</span> <span class="t-glow">+4 Glow</span> <span class="t-star">★</span> <span class="t-moon">☾</span> <span class="t-bloom">✿</span> <span class="t-leaf">❦</span></div></div>
+        <div class="banner">Night 3 — Midnight</div>
+        <div class="banner banner-teal">Blind cleared!</div>
+        <div class="modal"><h2>Run info</h2><p>A big paper sheet. It holds <span class="t-hand">whatever</span> the UI needs.</p><div class="modal-actions"><button class="btn btn-plain btn-small" id="btn-modal">Open as overlay</button></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="label">Palette</h2>
+      <div class="swatches" id="g-sw"></div>
+    </section>
+  </div>
+
+  <div id="pv-toolbar" class="paper">
+    <span class="tape tape-pink tape-l"></span>
+    <div class="grp"><b>Moon</b><span id="tb-moon"></span><button class="btn btn-plain" id="tb-hide">clouds</button></div>
+    <div class="grp"><b>Town</b><button class="btn btn-plain" data-p="0">0</button><button class="btn btn-plain" data-p="0.5">0.5</button><button class="btn btn-plain" data-p="1">1</button><input type="range" id="tb-prog" min="0" max="1" step="0.01" value="0" aria-label="progress"></div>
+    <div class="grp"><b>Sun</b><button class="btn btn-plain" data-m="idle">idle</button><button class="btn btn-plain" data-m="happy">happy</button><button class="btn btn-plain" data-m="wow">wow</button><button class="btn btn-plain" data-m="sleepy">sleepy</button><button class="btn btn-gold" id="tb-pulse">pulse</button></div>
+    <div class="grp"><b>Dawn</b><input type="range" id="tb-dawn" min="0" max="1" step="0.01" value="0" aria-label="dawn"></div>
+    <div class="grp"><button class="btn btn-send" id="tb-fly"><span class="btn-icon" data-plane></span>Fly plane</button><button class="btn btn-crumple" id="tb-cel">Celebrate</button></div>
+    <div class="grp"><b>Card size</b><input type="range" id="tb-size" min="44" max="150" step="2" value="96" aria-label="card size"><span id="tb-size-v">96px</span></div>
+  </div>
+
+  <div id="overlay"></div>
+  <svg id="svg-defs" width="0" height="0" style="position:absolute" aria-hidden="true"></svg>
+
+  <script src="js/core/namespace.js"></script>
+  <script src="js/art/art.js"></script>
+  <script src="js/art/scene.js"></script>
+  <script>
+  (function () {
+    var A = MA.art, $ = function (id) { return document.getElementById(id); };
+    A.ensureDefs();
+    MA.scene.mount($('scene'));
+
+    function card(c, cls, extra) {
+      return '<div class="card ' + (cls || '') + '">' + A.cardSVG(c) + '</div>';
+    }
+    function cell(inner, cap) { return '<div class="cell">' + inner + (cap ? '<small>' + cap + '</small>' : '') + '</div>'; }
+    var SUITS = ['star', 'moon', 'bloom', 'leaf'], n = 0;
+    function mk(rank, suit, sticker) { return { uid: 'p' + (++n), rank: rank, suit: suit, sticker: sticker || null }; }
+
+    // suits, stamp, plane
+    var h = '';
+    SUITS.forEach(function (s) { h += cell(A.suitIcon(s, 56), s); });
+    h += cell(A.stampIcon(40), 'stampIcon') + '<div class="cell plane-cell">' + A.planeSVG(120) + '<small>planeSVG</small></div>' + cell(A.stampIcon(20) + ' ' + A.suitIcon('star', 16), 'small sizes');
+    $('g-suits').innerHTML = h;
+
+    // ranks
+    h = ''; for (var r = 2; r <= 14; r++) h += cell(card(mk(r, 'star')), r === 14 ? 'A' : r === 11 ? 'J' : r === 12 ? 'Q' : r === 13 ? 'K' : r);
+    $('g-ranks').innerHTML = h;
+    // also the rest of the suits' number cards, small
+    // faces
+    h = ''; SUITS.forEach(function (s) { [14, 11, 12, 13].forEach(function (r) { h += cell(card(mk(r, s)), (r === 14 ? 'A' : r === 11 ? 'J' : r === 12 ? 'Q' : 'K') + ' ' + s); }); });
+    $('g-faces').innerHTML = h;
+
+    // stickers
+    h = ''; ['graph', 'watercolor', 'foil', 'glitter', 'washi', 'wax'].forEach(function (st, i) { h += cell(card(mk(7 + (i % 3), SUITS[i % 4], st)), st); });
+    h += cell(card(mk(12, 'bloom', 'foil')), 'foil Q') + cell(card(mk(14, 'moon', 'glitter')), 'glitter A') + cell(card(mk(13, 'leaf', 'washi')), 'washi K') + cell(card(mk(11, 'star', 'wax')), 'wax J') + cell(card(mk(10, 'leaf', 'watercolor')), 'watercolor 10') + cell(card(mk(6, 'moon', 'graph')), 'graph 6');
+    $('g-stickers').innerHTML = h;
+
+    // states
+    h = '';
+    h += cell(card(mk(9, 'bloom')), 'normal');
+    h += cell('<div class="state-card">' + card(mk(9, 'moon'), 'selected') + '</div>', 'selected');
+    h += cell(card(mk(9, 'leaf'), 'scoring'), 'scoring (animates)');
+    h += cell(card(mk(9, 'star'), 'debuffed'), 'debuffed');
+    h += cell(card(Object.assign(mk(12, 'bloom'), { faceDown: true }), 'facedown'), 'face-down (fog)');
+    h += cell('<div class="card">' + A.cardBackSVG() + '</div>', 'cardBackSVG');
+    h += cell('<div class="card jiggle" id="jig">' + A.cardSVG(mk(13, 'star')) + '</div>', 'jiggle (click)');
+    h += cell(card(mk(5, 'star'), 'dealing'), 'dealing');
+    h += cell(card(mk(8, 'leaf', 'foil'), 'debuffed'), 'debuffed + foil');
+    $('g-states').innerHTML = h;
+    $('jig').addEventListener('click', function () { this.classList.remove('jiggle'); void this.offsetWidth; this.classList.add('jiggle'); });
+
+    // keepsakes
+    h = ''; A.keepsakeIds().forEach(function (id) { var i = A.keepsakeInfo(id); h += cell('<div class="keepsake">' + A.keepsakeSVG(id) + '</div>', '<b>' + i.name + '</b><br>' + id + ' · ' + i.rarity); });
+    h += cell('<div class="keepsake">' + A.keepsakeSVG('not_a_real_id') + '</div>', 'unknown id');
+    h += cell('<div class="slot-empty" style="width:var(--card-w);height:calc(var(--card-w)*1.4)">Empty</div>', 'slot-empty');
+    $('g-keeps').innerHTML = h;
+
+    // letters
+    h = ''; A.letterIds().forEach(function (id) { var i = A.letterInfo(id); h += cell('<div class="consumable">' + A.letterSVG(id) + '</div>', '<b>' + i.name + '</b><br>' + id); });
+    $('g-letters').innerHTML = h;
+
+    // constellations
+    h = ''; A.constellationIds().forEach(function (id) { h += cell('<div class="consumable">' + A.constellationSVG(id) + '</div>', id); });
+    $('g-cons').innerHTML = h;
+
+    // visitors
+    h = ''; A.bossIds().forEach(function (id) { h += '<div class="cell" style="max-width:150px">' + A.bossSVG(id, 128) + '<small>' + id + '</small></div>'; });
+    $('g-boss').innerHTML = h;
+
+    // packs
+    h = ''; A.packIds().forEach(function (k) { h += '<div class="cell" style="max-width:190px">' + A.packSVG(k, { w: 160, h: 200 }) + '<small>' + k + '</small></div>'; });
+    $('g-packs').innerHTML = h;
+
+    // inline icons
+    document.querySelectorAll('[data-plane]').forEach(function (e) { e.innerHTML = A.planeSVG(30); });
+    document.querySelectorAll('[data-stampi]').forEach(function (e) { e.innerHTML = A.stampIcon(11); });
+    document.querySelectorAll('[data-stamp]').forEach(function (e) { e.innerHTML = A.stampIcon(15) + ' ' + e.textContent; });
+
+    // palette
+    var pal = { 'sky-1': '#1B1E5B', 'sky-2': '#222A70', 'sky-3': '#2A3584', 'sky-4': '#33409A', wall: '#3E2F74', 'wall-line': '#57489E', roof: '#1A1F4F', paper: '#F3EAD3', window: '#F6C445', curtain: '#EE9294', sun: '#E8795A', ink: '#2F5BD3', sweater: '#1F9C8C', vine: '#3E8E4E', leaf: '#6CBF5E', sill: '#D8A76B', star: '#F5CD55', 'text-dark': '#2A2250', 'suit star': '#E0A91F', 'suit moon': '#3A47A8', 'suit bloom': '#E0604B', 'suit leaf': '#2F8F5E' };
+    $('g-sw').innerHTML = Object.keys(pal).map(function (k) { return '<div class="sw" style="background:' + pal[k] + ';' + (['paper', 'window', 'star', 'sill', 'leaf', 'curtain'].indexOf(k) >= 0 ? 'color:#2A2250;text-shadow:none' : '') + '">' + k + '</div>'; }).join('');
+
+    // toolbar
+    var mn = ['New', 'Crescent', 'Half', 'Gibbous', 'Full'], mh = '', hidden = false, phase = 0;
+    mn.forEach(function (t, i) { mh += '<button class="btn btn-plain" data-ph="' + i + '">' + t + '</button>'; });
+    $('tb-moon').innerHTML = mh;
+    $('tb-moon').addEventListener('click', function (e) { var b = e.target.closest('[data-ph]'); if (b) { phase = +b.dataset.ph; MA.scene.setMoonPhase(phase, hidden); } });
+    $('tb-hide').addEventListener('click', function () { hidden = !hidden; MA.scene.setMoonPhase(phase, hidden); });
+    MA.scene.setMoonPhase(1);
+    phase = 1;
+    document.querySelectorAll('[data-p]').forEach(function (b) { b.addEventListener('click', function () { $('tb-prog').value = b.dataset.p; MA.scene.setProgress(+b.dataset.p); }); });
+    $('tb-prog').addEventListener('input', function () { MA.scene.setProgress(+this.value); });
+    document.querySelectorAll('[data-m]').forEach(function (b) { b.addEventListener('click', function () { MA.scene.sunMood(b.dataset.m); MA.scene.sunPulse(1); }); });
+    $('tb-pulse').addEventListener('click', function () { MA.scene.sunPulse(1.5); });
+    $('tb-dawn').addEventListener('input', function () { MA.scene.setDawn(+this.value); });
+    $('tb-fly').addEventListener('click', function () {
+      var r = this.getBoundingClientRect();
+      MA.scene.flyPlane(r.left + r.width / 2, r.top + r.height / 2).then(function () { var v = Math.min(1, (+$('tb-prog').value) + 0.08); $('tb-prog').value = v; MA.scene.setProgress(v); });
+    });
+    $('tb-cel').addEventListener('click', function () { MA.scene.celebrate(); $('tb-prog').value = 1; });
+    $('tb-size').addEventListener('input', function () { document.documentElement.style.setProperty('--card-w', this.value + 'px'); $('tb-size-v').textContent = this.value + 'px'; });
+    $('btn-pop').addEventListener('click', function () {
+      var r = this.getBoundingClientRect(), p = document.createElement('div');
+      p.className = 'pop pop-glow'; p.textContent = '+' + (1 + Math.floor(Math.random() * 9));
+      p.style.left = (r.left + r.width / 2) + 'px'; p.style.top = (r.top) + 'px'; p.style.position = 'fixed'; p.style.display = 'block';
+      document.body.appendChild(p); setTimeout(function () { p.remove(); }, 1200);
+    });
+    $('btn-modal').addEventListener('click', function () {
+      var o = $('overlay');
+      o.innerHTML = '<div class="modal"><span class="tape" style="top:-9px"></span><h2>Paper sheet</h2><p>This is a real <code>.modal</code> inside <code>#overlay</code>. Click anywhere to close.</p><div class="modal-actions"><button class="btn btn-send"><span class="btn-icon">' + A.planeSVG(30) + '</span>Send</button><button class="btn btn-plain" id="mclose">Close</button></div></div>';
+      o.onclick = function (e) { if (e.target === o || e.target.id === 'mclose') { o.innerHTML = ''; } };
+    });
+  })();
+  </script>
+</body>
+</html>

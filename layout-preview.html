@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Midnight Airmail — layout preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Mali:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<!--
+  CANONICAL MARKUP for the mid-game screen (Night 3, Midnight blind, Pen Pals lvl 2).
+  The UI builder should generate exactly this structure dynamically. Everything here is static mock data;
+  the little script at the bottom only injects SVG strings from MA.art (cards, keepsakes, icons) — in the real game the UI
+  does the same via innerHTML:
+     <div class="card">        + MA.art.cardSVG(card)
+     <div class="keepsake">    + MA.art.keepsakeSVG(id)
+     <div class="consumable">  + MA.art.letterSVG(id) / constellationSVG(id)
+  Elements marked data-svg="…" below are those injection points.
+-->
+<body>
+  <div id="app">
+    <div id="scene" aria-hidden="true"></div>
+
+    <div id="game" class="layout">
+      <aside id="sidebar">
+
+        <!-- #blind-panel  (cream paper note; add .tape as first child).
+             Children: .blind-emblem (only for Visitor blinds: MA.art.bossSVG(id, 60)), h2.blind-name, p.blind-sub,
+             .blind-target (.k label + .v number), .blind-reward (.k + .v with stamp icon), p.blind-curse (Visitor only).
+             Tape colour: dusk = .tape-teal, midnight = .tape-pink, visitor = .tape-gold. -->
+        <div id="blind-panel">
+          <span class="tape tape-pink"></span>
+          <h2 class="blind-name">Midnight</h2>
+          <p class="blind-sub">Night 3 · the big blind</p>
+          <div class="blind-target"><span class="k">Send at least</span><span class="v">3,000</span></div>
+          <div class="blind-reward"><span class="k">Reward</span><span data-svg="stamp" data-size="15"></span><span class="v">+4</span></div>
+        </div>
+
+        <!-- #score-panel  = THE LIT WINDOW. Structure is fixed: .window-pane holds two .curtain spans first, then label/value/goal.
+             .score-value is what the UI animates as Light counts up: set data-len="<number of characters>" on it (and on every .box-num)
+             so the numbers shrink to fit. The girl is drawn by CSS; set #score-panel[data-girl="idle|happy|wow|sleepy|look"] to change her mood. -->
+        <div id="score-panel" data-girl="idle">
+          <div class="window-pane">
+            <span class="curtain curtain-l"></span><span class="curtain curtain-r"></span>
+            <div class="score-label">Round Light</div>
+            <div class="score-value" data-len="5">1,284</div>
+            <div class="score-goal">of 3,000</div>
+          </div>
+        </div>
+
+        <!-- #hand-panel  (navy paper). .hand-name = themed hand name + .hand-lvl; .hand-poker = poker name (small);
+             .mult-row = .ink-box × .glow-box; each box = .box-label + .box-num. -->
+        <div id="hand-panel">
+          <div class="hand-name">Pen Pals<span class="hand-lvl">lvl 2</span></div>
+          <div class="hand-poker">Pair</div>
+          <div class="mult-row">
+            <div class="ink-box"><span class="box-label">Ink</span><span class="box-num" data-len="2">25</span></div>
+            <span class="box-x">×</span>
+            <div class="glow-box"><span class="box-label">Glow</span><span class="box-num" data-len="1">3</span></div>
+          </div>
+        </div>
+
+        <!-- #counters-panel  (cream paper). .counters = 2-column grid of .counter chips:
+             .counter.counter-sends / -crumples / -stamps / -night / -blind (.counter-wide spans both columns).
+             each = .counter-label + .counter-value. Stamps value starts with MA.art.stampIcon(15). -->
+        <div id="counters-panel">
+          <div class="counters">
+            <div class="counter counter-sends"><span class="counter-label">Sends</span><span class="counter-value">3</span></div>
+            <div class="counter counter-crumples"><span class="counter-label">Crumples</span><span class="counter-value">2</span></div>
+            <div class="counter counter-stamps"><span class="counter-label">Stamps</span><span class="counter-value"><span data-svg="stamp" data-size="15"></span>7</span></div>
+            <div class="counter counter-night"><span class="counter-label">Night</span><span class="counter-value">3/8</span></div>
+            <div class="counter counter-blind counter-wide"><span class="counter-label">Blind</span><span class="counter-value">2/3</span></div>
+          </div>
+        </div>
+
+        <!-- #sidebar-buttons: two .btn.btn-plain -->
+        <div id="sidebar-buttons">
+          <button class="btn btn-plain">Run info</button>
+          <button class="btn btn-plain">Options</button>
+        </div>
+      </aside>
+
+      <main id="table">
+        <div id="top-row">
+
+          <!-- #keepsakes.slots: exactly 5 children, each .keepsake (wrapper) with keepsakeSVG inside, or .slot-empty for an empty slot.
+               In the shop, add a .price-tag inside the wrapper. .jiggle when triggered, .dragging while dragged. -->
+          <div id="keepsakes" class="slots">
+            <div class="keepsake" data-svg="keepsake" data-id="black_cat"></div>
+            <div class="keepsake" data-svg="keepsake" data-id="graph_moon"></div>
+            <div class="keepsake" data-svg="keepsake" data-id="night_owl"></div>
+            <div class="keepsake" data-svg="keepsake" data-id="paper_sun"></div>
+            <div class="slot-empty">Empty<br>slot</div>
+          </div>
+
+          <!-- #consumables.slots: 2 children, each .consumable (letterSVG / constellationSVG inside) or .slot-empty -->
+          <div id="consumables" class="slots">
+            <div class="consumable" data-svg="letter" data-id="fold"></div>
+            <div class="slot-empty">Empty<br>slot</div>
+          </div>
+        </div>
+
+        <!-- #stage: transparent centre. Played cards live in .played (a row of .card). Score pops are .pop elements
+             (position:fixed; UI sets left/top in px, then removes them after ~1.1s). Frozen mid-float here. -->
+        <div id="stage">
+          <div class="played">
+            <div class="card scoring" data-svg="card" data-rank="9" data-suit="bloom" data-uid="c41"></div>
+            <div class="card scoring" data-svg="card" data-rank="9" data-suit="moon" data-uid="c8"></div>
+            <div class="card" data-svg="card" data-rank="13" data-suit="leaf" data-uid="c22"></div>
+          </div>
+          <div class="pop pop-ink" data-over="0" style="animation-play-state:paused;animation-delay:-.32s">+9</div>
+          <div class="pop pop-glow" data-over="1" style="animation-play-state:paused;animation-delay:-.42s">+2</div>
+        </div>
+
+        <!-- #hand-area = THE WINDOWSILL (tan torn paper).
+             #hand: 8 .card children (selected ones get .selected). Dealing: .card.dealing with style="--i:N".
+             #hand-controls: .btn.btn-send (with .btn-icon holding planeSVG) · sort .btn.btn-plain.btn-small · .btn.btn-crumple -->
+        <div id="hand-area">
+          <div id="hand">
+            <div class="card" data-svg="card" data-rank="14" data-suit="star" data-uid="c1"></div>
+            <div class="card selected" data-svg="card" data-rank="9" data-suit="bloom" data-uid="c41"></div>
+            <div class="card" data-svg="card" data-rank="3" data-suit="leaf" data-uid="c5"></div>
+            <div class="card" data-svg="card" data-rank="12" data-suit="bloom" data-uid="c9" data-sticker="foil"></div>
+            <div class="card selected" data-svg="card" data-rank="9" data-suit="moon" data-uid="c8" data-sticker="glitter"></div>
+            <div class="card" data-svg="card" data-rank="6" data-suit="star" data-uid="c13"></div>
+            <div class="card" data-svg="card" data-rank="11" data-suit="moon" data-uid="c30" data-sticker="washi"></div>
+            <div class="card" data-svg="card" data-rank="7" data-suit="leaf" data-uid="c27"></div>
+          </div>
+          <div id="hand-controls">
+            <button class="btn btn-send"><span class="btn-icon" data-svg="plane" data-size="34"></span>Send</button>
+            <button class="btn btn-plain btn-small">Rank</button>
+            <button class="btn btn-plain btn-small">Suit</button>
+            <button class="btn btn-crumple">Crumple</button>
+          </div>
+        </div>
+
+        <!-- #deck-pile: .deck-cards holds 3 card backs (.card + cardBackSVG), then .deck-count (a .label) -->
+        <div id="deck-pile">
+          <div class="deck-cards">
+            <div class="card" data-svg="back"></div>
+            <div class="card" data-svg="back"></div>
+            <div class="card" data-svg="back"></div>
+          </div>
+          <span class="deck-count label tape-gold">38 / 52</span>
+        </div>
+      </main>
+    </div>
+
+    <div id="overlay"></div>
+    <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+    <svg id="svg-defs" width="0" height="0" style="position:absolute" aria-hidden="true"></svg>
+  </div>
+
+  <script src="js/core/namespace.js"></script>
+  <script src="js/art/art.js"></script>
+  <script src="js/art/scene.js"></script>
+  <script>
+    (function () {
+      var A = MA.art;
+      A.ensureDefs();
+      document.querySelectorAll('[data-svg]').forEach(function (el) {
+        var t = el.dataset.svg, id = el.dataset.id;
+        if (t === 'card') el.innerHTML = A.cardSVG({ uid: el.dataset.uid, rank: +el.dataset.rank, suit: el.dataset.suit, sticker: el.dataset.sticker || null });
+        else if (t === 'back') el.innerHTML = A.cardBackSVG();
+        else if (t === 'keepsake') el.innerHTML = A.keepsakeSVG(id);
+        else if (t === 'letter') el.innerHTML = A.letterSVG(id);
+        else if (t === 'plane') el.innerHTML = A.planeSVG(+el.dataset.size || 30);
+        else if (t === 'stamp') el.innerHTML = A.stampIcon(+el.dataset.size || 15);
+      });
+      // pops are position:fixed at the scoring card's top-centre (the UI does exactly this with getBoundingClientRect)
+      function placePops() {
+        var cards = document.querySelectorAll('.played .card');
+        document.querySelectorAll('.pop[data-over]').forEach(function (p) {
+          var r = cards[+p.dataset.over].getBoundingClientRect();
+          p.style.left = (r.left + r.width / 2) + 'px'; p.style.top = (r.top - 6) + 'px';
+        });
+      }
+      placePops(); window.addEventListener('resize', placePops);
+      MA.scene.mount(document.getElementById('scene'));
+      MA.scene.setMoonPhase(2);
+      MA.scene.setProgress(0.4);
+      MA.scene.setDawn(0.25);
+    })();
+  </script>
+</body>
+</html>
